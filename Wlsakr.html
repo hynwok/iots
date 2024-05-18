@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candle Warmer Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: background 0.3s ease;
+            background-color: #f9f9f9; /* 기본 배경색 */
+        }
+        .container {
+            text-align: center;
+            background: #f0f0f0;
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px solid #ccc;
+            transition: background 0.3s ease;
+        }
+        .container h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            margin: 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        button.on {
+            background-color: #ff6f61;
+            color: white;
+        }
+        button.off {
+            background-color: #007bff;
+            color: white;
+        }
+        button.on:hover {
+            background-color: #e55b50;
+            transform: translateY(-2px);
+        }
+        button.off:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        #status {
+            margin-top: 30px;
+            font-size: 1.5em;
+            color: #555;
+        }
+    </style>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Candle Warmer Control</h1>
+        <button class="on" onclick="setControlPin(1)">Turn On</button>
+        <button class="off" onclick="setControlPin(0)">Turn Off</button>
+        <div id="status">Current Status: Unknown</div>
+    </div>
+
+    <script>
+        // Firebase configuration
+      const firebaseConfig = {
+  apiKey: "AIzaSyByuT35kr9TFvHGFOJgWKHWCdC-i577CEI",
+  authDomain: "janbing-f50be.firebaseapp.com",
+  databaseURL: "https://janbing-f50be-default-rtdb.firebaseio.com",
+  projectId: "janbing-f50be",
+  storageBucket: "janbing-f50be.appspot.com",
+  messagingSenderId: "237657361188",
+  appId: "1:237657361188:web:759c2257643d60ba5f81b1",
+  measurementId: "G-0DSYBHTTVR"
+};
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Function to set the control pin
+        function setControlPin(value) {
+            firebase.database().ref('/').update({
+                controlPin: value
+            }).then(() => {
+                console.log('Control pin updated successfully');
+            }).catch((error) => {
+                console.error('Error updating control pin:', error);
+            });
+        }
+
+        // Function to update the status text and background color
+        function updateStatusAndBackground(value) {
+            const statusDiv = document.getElementById('status');
+            if (value === 1) {
+                statusDiv.textContent = 'Current Status: On';
+                document.body.style.backgroundColor = 'red';
+            } else {
+                statusDiv.textContent = 'Current Status: Off';
+                document.body.style.backgroundColor = 'black';
+            }
+        }
+
+        // Realtime listener for controlPin
+        firebase.database().ref('/controlPin').on('value', (snapshot) => {
+            const controlPinValue = snapshot.val();
+            updateStatusAndBackground(controlPinValue);
+        });
+
+        // Get the initial control pin status
+        window.onload = () => {
+            firebase.database().ref('/controlPin').get().then((snapshot) => {
+                const controlPinValue = snapshot.val();
+                updateStatusAndBackground(controlPinValue);
+            }).catch((error) => {
+                console.error('Error getting initial control pin status:', error);
+            });
+        };
+    </script>
+</body>
+</html>
